@@ -28,15 +28,15 @@ def equations9(unknowns,x,y,z,r1,r2,r3):
     eq9=r3[2]**2-(xc3-x3)**2-(yc3-y3)**2-(zc3-z3)**2
     return (eq1,eq2,eq3,eq4,eq5,eq6,eq7,eq8,eq9)
 
-def equations3(unknowns,x,y,z,r1,r2,r3):
+def equations3(unknowns,x,y,z,r):
 #calibrated values
     xc1,xc2,xc3=x
     yc1,yc2,yc3=y
     zc1,zc2,zc3=z
     x1,y1,z1=unknowns
-    eq1=r1[0]**2-(xc1-x1)**2-(yc1-y1)**2-(zc1-z1)**2
-    eq4=r1[1]**2-(xc2-x1)**2-(yc2-y1)**2-(zc2-z1)**2
-    eq7=r1[2]**2-(xc3-x1)**2-(yc3-y1)**2-(zc3-z1)**2
+    eq1=r[0]**2-(xc1-x1)**2-(yc1-y1)**2-(zc1-z1)**2
+    eq4=r[1]**2-(xc2-x1)**2-(yc2-y1)**2-(zc2-z1)**2
+    eq7=r[2]**2-(xc3-x1)**2-(yc3-y1)**2-(zc3-z1)**2
     return (eq1,eq4,eq7)
 
 def match(line,keyword):
@@ -229,56 +229,26 @@ class readwifi(threading.Thread):
         i=0
         xrouter=[0]*len(names); yrouter=xrouter; zrouter=xrouter;
         while i<len(names):
-            if len(names)<3:
-                print('not enough networks')
-                break
-            if len(names)-i<3:              #use 3rd last wifi to calculate location if #wifis not divideable through 3
-                i=i-(3-(len(names)-i))
-                #print(i,len(names))
             wifi1=names[i]
-            wifi2=names[i+1]
-            wifi3=names[i+2]
-            r1=[0]*3 ; r2=[0]*3; r3=[0]*3;
+            r=[0]*3
             #print(quality1[i])
             for j in range(0,len(quality1[i])):
                 qualitywifi1=quality1[i][j]
-                qualitywifi2=quality1[i+1][j]
-                qualitywifi3=quality1[i+2][j]
                 if int(qualitywifi1)<-50:                  #behind wall
                     RSSI1m=-30; Envfactor=4
                 else:
                     RSSI1m=-22; Envfactor=3
-                r1[j]=Distance(qualitywifi1,RSSI1m,Envfactor)
-                if int(qualitywifi2)<-50:                  #behind wall
-                    RSSI1m=-30; Envfactor=4
-                else:
-                    RSSI1m=-22; Envfactor=3
-                r2[j]=Distance(qualitywifi2,RSSI1m,Envfactor)
-                if int(qualitywifi3)<-50:                  #behind wall
-                    RSSI1m=-30; Envfactor=4
-                else:
-                    RSSI1m=-22; Envfactor=3
-                r3[j]=Distance(qualitywifi3,RSSI1m,Envfactor)
+                r[j]=Distance(qualitywifi1,RSSI1m,Envfactor)
             try:
-                sol=(sc.root(equations,(10,10,10,10,10,10,10,10,10),args=(x,y,z,r1,r2,r3)))
+                sol=(sc.root(equations3,(10,10,10),args=(x,y,z,r)))
                 xrouter[i]=sol.x[0]
-                xrouter[i+1]=sol.x[1]
-                xrouter[i+2]=sol.x[2]
-                yrouter[i]=sol.x[3]
-                yrouter[i+1]=sol.x[4]
-                yrouter[i+2]=sol.x[5]
-                zrouter[i]=sol.x[6]
-                zrouter[i+1]=sol.x[7]
-                zrouter[i+2]=sol.x[8]
+                yrouter[i]=sol.x[1]
+                zrouter[i]=sol.x[2]
                 print(names[i],xrouter[i],yrouter[i],zrouter[i],'\n')
-                print(names[i+1],xrouter[i+1],yrouter[i+1],zrouter[i+1],'\n')
-                print(names[i+2],xrouter[i+2],yrouter[i+2],zrouter[i+2],'\n')
             except:
                 print('no solution found')
-                print(names[i],r1[0],r1[1],r1[2],quality1[i][0],quality1[i][1],quality1[i][2],'\n')
-                print(names[i+1],r2[0],r2[1],r2[2],quality1[i+1][0],quality1[i+1][1],quality1[i+1][2],'\n')
-                print(names[i+2],r3[0],r3[1],r3[2],quality1[i+2][0],quality1[i+2][1],quality1[i+2][2],'\n')
-            i=i+3
+                print(names[i],r[0],r[1],r[2],quality1[i][0],quality1[i][1],quality1[i][2],'\n')
+            i=i+1
 
 
 
